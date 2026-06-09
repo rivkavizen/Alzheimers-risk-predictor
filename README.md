@@ -56,15 +56,59 @@ python app.py
 For AI recommendations and chat, enter your Claude API key in **Settings** in the browser.
 Install CrewAI dependencies: `pip install -r backend/requirements.txt`
 
-## Supabase setup
+## Deploy to Railway
+
+1. Push this repo to GitHub (already connected).
+2. Go to [railway.app](https://railway.app) → **New Project** → **Deploy from GitHub repo** → select `Alzheimers-risk-predictor`.
+3. Railway reads `railway.toml` / `Procfile` at the repo root (no root directory override needed).
+4. Add **Variables** in Railway:
+
+| Variable | Value |
+|----------|--------|
+| `SUPABASE_URL` | Your Supabase project URL |
+| `SUPABASE_KEY` | Supabase **service role** key |
+| `MODEL_PATH` | `ml/model_artifacts/xgb_model.pkl` |
+| `FEATURE_NAMES_PATH` | `ml/model_artifacts/feature_names.json` |
+
+5. Deploy. Open the generated URL → frontend + API on one domain.
+6. Verify: `GET https://your-app.up.railway.app/api/health` → `{"status":"ok"}`
+
+**Note:** Claude API keys are **not** set on Railway — each visitor enters their own key in **Settings**.
+
+## Supabase setup (required for save/chat/history)
 
 1. Create a project at [supabase.com](https://supabase.com)
-2. Run SQL files in order in the SQL Editor:
+2. **SQL Editor** → run in order:
    - `supabase/migrations/001_create_patients.sql`
    - `supabase/migrations/002_create_assessments.sql`
    - `supabase/migrations/003_create_chat_sessions.sql`
-3. Copy project URL and service role key to `.env`
+3. **Settings → API** → copy URL + `service_role` key into Railway variables (and local `.env`)
+
+## CI (GitHub Actions)
+
+On every push/PR to `main`, `.github/workflows/test.yml` runs:
+
+```text
+clean_data → pytest tests/
+```
+
+## End-to-end test checklist
+
+- [ ] `python ml/clean_data.py` and `pytest tests/ -v` pass locally
+- [ ] `cd backend && python app.py` → http://localhost:5000 loads
+- [ ] Settings → save Claude API key
+- [ ] New Assessment → Results (risk + SHAP + recommendations)
+- [ ] Save assessment → row in Supabase `assessments` table
+- [ ] Chat → 3+ message exchanges
+- [ ] Trends → chart after 2+ saved assessments for same patient
+- [ ] Railway `/api/health` returns 200
 
 ## Project structure
 
-See the implementation plan in the project documentation for full architecture (Flask backend, vanilla HTML/CSS/JS frontend, CrewAI agents, Supabase).
+```text
+ml/           Data cleaning, training, model artifacts
+backend/      Flask API, CrewAI agents, serves frontend/
+frontend/     Vanilla HTML/CSS/JS
+supabase/     Database migrations
+tests/        ML + API tests
+```

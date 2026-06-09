@@ -27,3 +27,7 @@ htmlcov/
 
 # Jupyter
 .ipynb_checkpoints/
+
+# Office / planning docs (local only)
+*.docx
+~$*
