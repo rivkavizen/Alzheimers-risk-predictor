@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trend Tracking</title>
+  <link rel="stylesheet" href="/css/styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <nav class="navbar">
+    <a class="brand" href="/index.html">Alzheimer's Risk Predictor</a>
+    <a href="/assessment.html">New Assessment</a>
+    <a href="/trends.html">Trends</a>
+    <a href="/settings.html">Settings</a>
+  </nav>
+  <main class="container">
+    <h1>Trend Tracking</h1>
+    <div class="card">
+      <label for="patient-select">Patient</label>
+      <select id="patient-select"><option value="">Select patient...</option></select>
+    </div>
+    <div id="charts" style="display:none">
+      <div class="card">
+        <h2>Risk score over time</h2>
+        <div class="chart-wrap"><canvas id="risk-chart"></canvas></div>
+      </div>
+      <div class="card">
+        <h2>Cognitive metrics (normalized)</h2>
+        <div class="chart-wrap"><canvas id="cognitive-chart"></canvas></div>
+      </div>
+      <div class="card">
+        <h2>Changes between assessments</h2>
+        <div id="delta-table"></div>
+      </div>
+    </div>
+    <div id="status" class="muted"></div>
+  </main>
+  <script type="module">
+    import { getPatientHistory, listPatients } from "/js/api.js";
+
+    let riskChart, cognitiveChart;
+
+    function normalize(values) {
+      const min = Math.min(...values);
+      const max = Math.max(...values);
+      if (max === min) return values.map(() => 0.5);
+      return values.map((v) => (v - min) / (max - min));
+    }
+
+    function renderDeltaTable(assessments) {
+      const el = document.getElementById("delta-table");
+      if (assessments.length < 2) {
+        el.innerHTML = "<p class='muted'>Need at least 2 saved assessments to compare.</p>";
+        return;
+      }
+      const prev = assessments[assessments.length - 2];
+      const curr = assessments[assessments.length - 1];
+      const rows = [
+        ["Risk score", prev.risk_score, curr.risk_score],
+        ["MMSE", prev.mmse, curr.mmse],
+        ["Functional assessment", prev.functional_assessment, curr.functional_assessment],
+        ["ADL", prev.adl, curr.adl],
+      ];
+      el.innerHTML = `<table><thead><tr><th>Metric</th><th>Previous</th><th>Latest</th><th>Change</th></tr></thead><tbody>${
+        rows.map(([name, a, b]) => {
+          const delta = Number(b) - Number(a);
+          const sign = delta > 0 ? "+" : "";
+          return `<tr><td>${name}</td><td>${a}</td><td>${b}</td><td>${sign}${delta.toFixed(2)}</td></tr>`;
+        }).join("")
+      }</tbody></table>`;
+    }
+
+    async function loadHistory(patientId) {
+      const status = document.getElementById("status");
+      const charts = document.getElementById("charts");
+      try {
+        const assessments = await getPatientHistory(patientId);
+        if (!assessments.length) {
+          charts.style.display = "none";
+          status.textContent = "No saved assessments for this patient.";
+          return;
+        }
+        charts.style.display = "block";
+        status.textContent = "";
+        const labels = assessments.map((a) => new Date(a.assessed_at).toLocaleDateString());
+        const riskScores = assessments.map((a) => Number(a.risk_score));
+
+        if (riskChart) riskChart.destroy();
+        riskChart = new Chart(document.getElementById("risk-chart"), {
+          type: "line",
+          data: { labels, datasets: [{ label: "Risk score", data: riskScores, borderColor: "#2563eb" }] },
+          options: { responsive: true, maintainAspectRatio: false },
+        });
+
+        const mmse = normalize(assessments.map((a) => Number(a.mmse)));
+        const fa = normalize(assessments.map((a) => Number(a.functional_assessment)));
+        const adl = normalize(assessments.map((a) => Number(a.adl)));
+
+        if (cognitiveChart) cognitiveChart.destroy();
+        cognitiveChart = new Chart(document.getElementById("cognitive-chart"), {
+          type: "line",
+          data: {
+            labels,
+            datasets: [
+              { label: "MMSE (norm)", data: mmse, borderColor: "#16a34a" },
+              { label: "Functional (norm)", data: fa, borderColor: "#f59e0b" },
+              { label: "ADL (norm)", data: adl, borderColor: "#dc2626" },
+            ],
+          },
+          options: { responsive: true, maintainAspectRatio: false },
+        });
+
+        renderDeltaTable(assessments);
+      } catch (err) {
+        status.textContent = err.message;
+      }
+    }
+
+    async function init() {
+      const select = document.getElementById("patient-select");
+      try {
+        const patients = await listPatients();
+        patients.forEach((p) => {
+          const opt = document.createElement("option");
+          opt.value = p.id;
+          opt.textContent = p.name;
+          select.appendChild(opt);
+        });
+        const params = new URLSearchParams(window.location.search);
+        if (params.get("patient_id")) {
+          select.value = params.get("patient_id");
+          loadHistory(select.value);
+        }
+      } catch (err) {
+        document.getElementById("status").textContent = err.message;
+      }
+      select.addEventListener("change", () => {
+        if (select.value) loadHistory(select.value);
+      });
+    }
+    init();
+  </script>
+</body>
+</html>

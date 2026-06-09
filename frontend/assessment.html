@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>New Assessment</title>
+  <link rel="stylesheet" href="/css/styles.css" />
+</head>
+<body>
+  <nav class="navbar">
+    <a class="brand" href="/index.html">Alzheimer's Risk Predictor</a>
+    <a href="/assessment.html">New Assessment</a>
+    <a href="/trends.html">Trends</a>
+    <a href="/settings.html">Settings</a>
+  </nav>
+  <main class="container">
+    <h1>New Assessment</h1>
+    <div id="key-alert"></div>
+    <div class="card">
+      <h2>Patient</h2>
+      <label for="patient-select">Select existing patient</label>
+      <select id="patient-select"><option value="">-- New patient --</option></select>
+      <div id="new-patient-fields">
+        <label for="patient-name">New patient name</label>
+        <input id="patient-name" type="text" placeholder="Jane Doe" />
+      </div>
+    </div>
+    <form id="assessment-form">
+      <details open><summary>Demographics &amp; Lifestyle</summary><div class="grid-2" id="demographics"></div></details>
+      <details><summary>Medical History</summary><div class="grid-2" id="medical"></div></details>
+      <details><summary>Lab Results</summary><div class="grid-2" id="labs"></div></details>
+      <details><summary>Cognitive Assessment</summary><div class="grid-2" id="cognitive"></div></details>
+      <button type="submit" id="run-btn">Run Assessment</button>
+      <span id="loading" class="muted" style="margin-left:1rem;display:none">Running model + AI...</span>
+    </form>
+    <div id="error" class="alert error" style="display:none"></div>
+  </main>
+  <script type="module">
+    import { createPatient, listPatients, predict } from "/js/api.js";
+    import { collectFormData, FIELD_GROUPS, renderFields } from "/js/assessment.js";
+    import { hasApiKey } from "/js/settings.js";
+
+    renderFields(document.getElementById("demographics"), FIELD_GROUPS.demographics);
+    renderFields(document.getElementById("medical"), FIELD_GROUPS.medical);
+    renderFields(document.getElementById("labs"), FIELD_GROUPS.labs);
+    renderFields(document.getElementById("cognitive"), FIELD_GROUPS.cognitive);
+
+    const keyAlert = document.getElementById("key-alert");
+    if (!hasApiKey()) {
+      keyAlert.innerHTML = '<div class="alert warn">Add your Claude API key in <a href="/settings.html">Settings</a> for AI recommendations.</div>';
+    }
+
+    async function loadPatients() {
+      try {
+        const patients = await listPatients();
+        const select = document.getElementById("patient-select");
+        patients.forEach((p) => {
+          const opt = document.createElement("option");
+          opt.value = p.id;
+          opt.textContent = p.name;
+          select.appendChild(opt);
+        });
+      } catch (_) { /* Supabase may not be configured yet */ }
+    }
+    loadPatients();
+
+    document.getElementById("patient-select").addEventListener("change", (e) => {
+      document.getElementById("new-patient-fields").style.display = e.target.value ? "none" : "block";
+    });
+
+    document.getElementById("assessment-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const errorEl = document.getElementById("error");
+      const loading = document.getElementById("loading");
+      errorEl.style.display = "none";
+      loading.style.display = "inline";
+
+      try {
+        let patientId = document.getElementById("patient-select").value;
+        if (!patientId) {
+          const name = document.getElementById("patient-name").value.trim();
+          if (!name) throw new Error("Enter a patient name or select an existing patient.");
+          const patient = await createPatient({ name });
+          patientId = patient.id;
+        }
+
+        const patientData = collectFormData(e.target);
+        const result = await predict(patientData);
+        sessionStorage.setItem("lastAssessment", JSON.stringify({
+          patientId,
+          patientData,
+          result,
+        }));
+        window.location.href = "/results.html";
+      } catch (err) {
+        errorEl.textContent = err.message;
+        errorEl.style.display = "block";
+      } finally {
+        loading.style.display = "none";
+      }
+    });
+  </script>
+</body>
+</html>

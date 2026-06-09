@@ -3,11 +3,15 @@ from pathlib import Path
 from flask import Flask, jsonify, send_from_directory
 
 from config import FRONTEND_DIR
+from routes.chat import chat_bp
+from routes.patients import patients_bp
 from routes.predict import predict_bp
 from services.ml_service import load_model
 
 app = Flask(__name__, static_folder=None)
 app.register_blueprint(predict_bp)
+app.register_blueprint(patients_bp)
+app.register_blueprint(chat_bp)
 
 
 @app.get("/api/health")

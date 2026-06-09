@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Health Coach Chat</title>
+  <link rel="stylesheet" href="/css/styles.css" />
+</head>
+<body>
+  <nav class="navbar">
+    <a class="brand" href="/index.html">Alzheimer's Risk Predictor</a>
+    <a href="/assessment.html">New Assessment</a>
+    <a href="/trends.html">Trends</a>
+    <a href="/settings.html">Settings</a>
+  </nav>
+  <main class="container">
+    <h1>Health Coach</h1>
+    <div id="missing" class="alert warn" style="display:none">Run an assessment first.</div>
+    <div id="content" style="display:none">
+      <div id="follow-up" class="alert info" style="display:none"></div>
+      <div id="chat-log" class="chat-log card"></div>
+      <form id="chat-form">
+        <label for="message">Your message</label>
+        <textarea id="message" rows="3" required placeholder="Ask about your results or recommendations..."></textarea>
+        <button type="submit">Send</button>
+      </form>
+      <div id="error" class="alert error" style="display:none"></div>
+    </div>
+  </main>
+  <script type="module">
+    import { sendChat } from "/js/api.js";
+    import { hasApiKey } from "/js/settings.js";
+
+    const raw = sessionStorage.getItem("lastAssessment");
+    if (!raw) {
+      document.getElementById("missing").style.display = "block";
+    } else if (!hasApiKey()) {
+      document.getElementById("missing").style.display = "block";
+      document.getElementById("missing").innerHTML = 'Add your Claude API key in <a href="/settings.html">Settings</a> to use chat.';
+    } else {
+      const state = JSON.parse(raw);
+      document.getElementById("content").style.display = "block";
+      const log = document.getElementById("chat-log");
+      let sessionId = state.chatSessionId || null;
+
+      function appendBubble(role, content) {
+        const div = document.createElement("div");
+        div.className = `chat-bubble ${role}`;
+        div.textContent = content;
+        log.appendChild(div);
+        log.scrollTop = log.scrollHeight;
+      }
+
+      document.getElementById("chat-form").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const message = document.getElementById("message").value.trim();
+        const errorEl = document.getElementById("error");
+        errorEl.style.display = "none";
+        appendBubble("user", message);
+        document.getElementById("message").value = "";
+
+        try {
+          const payload = {
+            message,
+            features: state.result.features,
+            prediction: {
+              risk_score: state.result.risk_score,
+              risk_label: state.result.risk_label,
+              shap_explanation: state.result.shap_explanation,
+            },
+            session_id: sessionId,
+            assessment_id: state.assessmentId,
+          };
+          const data = await sendChat(payload);
+          sessionId = data.session_id;
+          state.chatSessionId = sessionId;
+          sessionStorage.setItem("lastAssessment", JSON.stringify(state));
+          appendBubble("assistant", data.reply);
+          const followUp = document.getElementById("follow-up");
+          if (data.follow_up_question) {
+            followUp.textContent = data.follow_up_question;
+            followUp.style.display = "block";
+          } else {
+            followUp.style.display = "none";
+          }
+        } catch (err) {
+          errorEl.textContent = err.message;
+          errorEl.style.display = "block";
+        }
+      });
+    }
+  </script>
+</body>
+</html>

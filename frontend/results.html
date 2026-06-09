@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Assessment Results</title>
+  <link rel="stylesheet" href="/css/styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <nav class="navbar">
+    <a class="brand" href="/index.html">Alzheimer's Risk Predictor</a>
+    <a href="/assessment.html">New Assessment</a>
+    <a href="/trends.html">Trends</a>
+    <a href="/settings.html">Settings</a>
+  </nav>
+  <main class="container">
+    <h1>Assessment Results</h1>
+    <div id="missing" class="alert warn" style="display:none">No assessment found. <a href="/assessment.html">Run one first</a>.</div>
+    <div id="content" style="display:none">
+      <div class="card">
+        <div id="risk-badge" class="risk-badge"></div>
+        <p id="risk-score" class="muted"></p>
+      </div>
+      <div class="card">
+        <h2>Why this score? (SHAP)</h2>
+        <div class="chart-wrap"><canvas id="shap-chart"></canvas></div>
+      </div>
+      <div class="card">
+        <h2>Personalized recommendations</h2>
+        <div id="recommendations"></div>
+      </div>
+      <button id="save-btn">Save assessment</button>
+      <a class="btn secondary" id="chat-btn" href="/chat.html" style="margin-left:0.5rem">Start chat</a>
+      <div id="status" style="margin-top:1rem"></div>
+    </div>
+  </main>
+  <script type="module">
+    import { saveAssessment } from "/js/api.js";
+    import { renderRecommendations, renderShapChart } from "/js/results.js";
+
+    const raw = sessionStorage.getItem("lastAssessment");
+    if (!raw) {
+      document.getElementById("missing").style.display = "block";
+    } else {
+      const { patientId, result } = JSON.parse(raw);
+      document.getElementById("content").style.display = "block";
+
+      const badge = document.getElementById("risk-badge");
+      badge.textContent = `${result.risk_label} Risk`;
+      badge.className = `risk-badge ${result.risk_label.toLowerCase()}`;
+      document.getElementById("risk-score").textContent =
+        `Risk score: ${(result.risk_score * 100).toFixed(1)}%`;
+
+      renderShapChart(document.getElementById("shap-chart"), result.shap_explanation);
+      renderRecommendations(document.getElementById("recommendations"), result.recommendations);
+
+      if (result.ai_note) {
+        document.getElementById("status").innerHTML = `<div class="alert info">${result.ai_note}</div>`;
+      }
+
+      document.getElementById("save-btn").addEventListener("click", async () => {
+        const status = document.getElementById("status");
+        try {
+          const saved = await saveAssessment({
+            patient_id: patientId,
+            ...result.features,
+            risk_score: result.risk_score,
+            risk_label: result.risk_label,
+            shap_data: result.shap_explanation,
+            recommendations: result.recommendations || [],
+          });
+          sessionStorage.setItem("lastAssessment", JSON.stringify({
+            patientId,
+            result,
+            assessmentId: saved.id,
+          }));
+          status.innerHTML = '<div class="alert info">Assessment saved.</div>';
+        } catch (err) {
+          status.innerHTML = `<div class="alert error">${err.message}</div>`;
+        }
+      });
+    }
+  </script>
+</body>
+</html>

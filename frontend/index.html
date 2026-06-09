@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Alzheimer's Risk Predictor</title>
+  <link rel="stylesheet" href="/css/styles.css" />
+</head>
+<body>
+  <nav class="navbar">
+    <a class="brand" href="/index.html">Alzheimer's Risk Predictor</a>
+    <a href="/assessment.html">New Assessment</a>
+    <a href="/trends.html">Trends</a>
+    <a href="/settings.html">Settings</a>
+  </nav>
+  <main class="container">
+    <h1>Patient Dashboard</h1>
+    <p class="muted">Track assessments, view risk explanations, and get AI-powered recommendations.</p>
+    <div class="card">
+      <h2>Quick actions</h2>
+      <a class="btn" href="/assessment.html">Start new assessment</a>
+      <a class="btn secondary" href="/settings.html" style="margin-left:0.5rem">Configure API key</a>
+    </div>
+    <div class="card">
+      <h2>Patients</h2>
+      <div id="patient-list" class="muted">Loading...</div>
+    </div>
+  </main>
+  <script type="module">
+    import { listPatients } from "/js/api.js";
+
+    async function load() {
+      const el = document.getElementById("patient-list");
+      try {
+        const patients = await listPatients();
+        if (!patients.length) {
+          el.innerHTML = "<p>No patients yet. Create one during a new assessment.</p>";
+          return;
+        }
+        el.innerHTML = `<table><thead><tr><th>Name</th><th>Created</th><th></th></tr></thead><tbody>${
+          patients.map((p) => `<tr>
+            <td>${p.name}</td>
+            <td>${new Date(p.created_at).toLocaleDateString()}</td>
+            <td><a href="/trends.html?patient_id=${p.id}">View trends</a></td>
+          </tr>`).join("")
+        }</tbody></table>`;
+      } catch (err) {
+        el.innerHTML = `<div class="alert warn">Could not load patients. ${err.message}</div>`;
+      }
+    }
+    load();
+  </script>
+</body>
+</html>

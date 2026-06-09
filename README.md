@@ -48,9 +48,13 @@ Claude API keys are entered by each visitor in the browser Settings page — not
 pip install -r backend/requirements.txt
 cd backend
 python app.py
+# Open http://localhost:5000  (frontend + API)
 # GET  http://localhost:5000/api/health
 # POST http://localhost:5000/api/predict  (body: tests/fixtures/sample_patient.json)
 ```
+
+For AI recommendations and chat, enter your Claude API key in **Settings** in the browser.
+Install CrewAI dependencies: `pip install -r backend/requirements.txt`
 
 ## Supabase setup
 
