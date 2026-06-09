@@ -42,6 +42,25 @@ Copy `.env.example` to `.env` for backend development (Supabase, model paths).
 
 Claude API keys are entered by each visitor in the browser Settings page — not stored on the server.
 
+## Backend API (local)
+
+```powershell
+pip install -r backend/requirements.txt
+cd backend
+python app.py
+# GET  http://localhost:5000/api/health
+# POST http://localhost:5000/api/predict  (body: tests/fixtures/sample_patient.json)
+```
+
+## Supabase setup
+
+1. Create a project at [supabase.com](https://supabase.com)
+2. Run SQL files in order in the SQL Editor:
+   - `supabase/migrations/001_create_patients.sql`
+   - `supabase/migrations/002_create_assessments.sql`
+   - `supabase/migrations/003_create_chat_sessions.sql`
+3. Copy project URL and service role key to `.env`
+
 ## Project structure
 
 See the implementation plan in the project documentation for full architecture (Flask backend, vanilla HTML/CSS/JS frontend, CrewAI agents, Supabase).

@@ -1,0 +1,46 @@
+create table if not exists assessments (
+    id uuid primary key default gen_random_uuid(),
+    patient_id uuid not null references patients (id) on delete cascade,
+    assessed_at timestamptz not null default now(),
+
+    age numeric,
+    gender smallint,
+    ethnicity smallint,
+    education_level smallint,
+    bmi numeric,
+    smoking smallint,
+    alcohol_consumption numeric,
+    physical_activity numeric,
+    diet_quality numeric,
+    sleep_quality numeric,
+    family_history_alzheimers smallint,
+    cardiovascular_disease smallint,
+    diabetes smallint,
+    depression smallint,
+    head_injury smallint,
+    hypertension smallint,
+    systolic_bp numeric,
+    diastolic_bp numeric,
+    cholesterol_total numeric,
+    cholesterol_ldl numeric,
+    cholesterol_hdl numeric,
+    cholesterol_triglycerides numeric,
+    mmse numeric,
+    functional_assessment numeric,
+    memory_complaints smallint,
+    behavioral_problems smallint,
+    adl numeric,
+    confusion smallint,
+    disorientation smallint,
+    personality_changes smallint,
+    difficulty_completing_tasks smallint,
+    forgetfulness smallint,
+
+    risk_score numeric not null,
+    risk_label text not null,
+    shap_data jsonb not null default '{}'::jsonb,
+    recommendations jsonb not null default '[]'::jsonb
+);
+
+create index if not exists assessments_patient_id_idx on assessments (patient_id);
+create index if not exists assessments_assessed_at_idx on assessments (assessed_at desc);
