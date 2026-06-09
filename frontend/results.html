@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Assessment Results</title>
   <link rel="stylesheet" href="/css/styles.css" />
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
 <body>
   <nav class="navbar">
@@ -30,20 +30,28 @@
         <h2>Personalized recommendations</h2>
         <div id="recommendations"></div>
       </div>
-      <button id="save-btn">Save assessment</button>
-      <a class="btn secondary" id="chat-btn" href="/chat.html" style="margin-left:0.5rem">Start chat</a>
+      <div class="card" id="save-card">
+        <h2>Save to database</h2>
+        <div id="patient-save-fields" style="display:none">
+          <label for="save-patient-name">Patient name</label>
+          <input id="save-patient-name" type="text" placeholder="Jane Doe" />
+        </div>
+        <button id="save-btn">Save assessment</button>
+        <a class="btn secondary" id="chat-btn" href="/chat.html" style="margin-left:0.5rem">Start chat</a>
+      </div>
       <div id="status" style="margin-top:1rem"></div>
     </div>
   </main>
   <script type="module">
-    import { saveAssessment } from "/js/api.js";
+    import { createPatient, saveAssessment } from "/js/api.js";
     import { renderRecommendations, renderShapChart } from "/js/results.js";
 
     const raw = sessionStorage.getItem("lastAssessment");
     if (!raw) {
       document.getElementById("missing").style.display = "block";
     } else {
-      const { patientId, result } = JSON.parse(raw);
+      const state = JSON.parse(raw);
+      const { result } = state;
       document.getElementById("content").style.display = "block";
 
       const badge = document.getElementById("risk-badge");
@@ -52,16 +60,55 @@
       document.getElementById("risk-score").textContent =
         `Risk score: ${(result.risk_score * 100).toFixed(1)}%`;
 
-      renderShapChart(document.getElementById("shap-chart"), result.shap_explanation);
+      try {
+        renderShapChart(document.getElementById("shap-chart"), result.shap_explanation);
+      } catch (err) {
+        document.getElementById("status").innerHTML =
+          `<div class="alert error">${err.message}</div>`;
+      }
       renderRecommendations(document.getElementById("recommendations"), result.recommendations);
 
-      if (result.ai_note) {
-        document.getElementById("status").innerHTML = `<div class="alert info">${result.ai_note}</div>`;
+      const statusParts = [];
+      if (result.ai_note) statusParts.push(`<div class="alert info">${result.ai_note}</div>`);
+      if (result.ai_error) statusParts.push(`<div class="alert warn">${result.ai_error}</div>`);
+      if (result.risk_analysis && !result.recommendations?.length) {
+        statusParts.push(`<div class="alert info"><strong>AI analysis:</strong><br>${result.risk_analysis}</div>`);
+      }
+      if (statusParts.length) {
+        document.getElementById("status").innerHTML = statusParts.join("");
+      }
+
+      if (!state.patientId) {
+        document.getElementById("patient-save-fields").style.display = "block";
+        if (state.patientName) {
+          document.getElementById("save-patient-name").value = state.patientName;
+        }
+      }
+
+      const chatBtn = document.getElementById("chat-btn");
+      if (!state.assessmentId) {
+        chatBtn.title = "Save the assessment first to enable chat";
+        chatBtn.addEventListener("click", (e) => {
+          if (!state.assessmentId) {
+            e.preventDefault();
+            document.getElementById("status").innerHTML =
+              '<div class="alert warn">Save the assessment first, then start chat.</div>';
+          }
+        });
       }
 
       document.getElementById("save-btn").addEventListener("click", async () => {
         const status = document.getElementById("status");
         try {
+          let patientId = state.patientId;
+          if (!patientId) {
+            const name = document.getElementById("save-patient-name").value.trim();
+            if (!name) throw new Error("Enter a patient name to save.");
+            const patient = await createPatient({ name });
+            patientId = patient.id;
+            state.patientId = patientId;
+          }
+
           const saved = await saveAssessment({
             patient_id: patientId,
             ...result.features,
@@ -70,12 +117,10 @@
             shap_data: result.shap_explanation,
             recommendations: result.recommendations || [],
           });
-          sessionStorage.setItem("lastAssessment", JSON.stringify({
-            patientId,
-            result,
-            assessmentId: saved.id,
-          }));
-          status.innerHTML = '<div class="alert info">Assessment saved.</div>';
+          state.assessmentId = saved.id;
+          sessionStorage.setItem("lastAssessment", JSON.stringify(state));
+          document.getElementById("patient-save-fields").style.display = "none";
+          status.innerHTML = '<div class="alert info">Assessment saved. You can now start chat.</div>';
         } catch (err) {
           status.innerHTML = `<div class="alert error">${err.message}</div>`;
         }

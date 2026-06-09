@@ -26,9 +26,10 @@ def test_chat_requires_key(mock_get_supabase, mock_chat_reply, client):
     assert response.status_code == 401
 
 
+@patch("routes.chat.is_supabase_configured", return_value=True)
 @patch("routes.chat.chat_reply")
 @patch("routes.chat.get_supabase")
-def test_chat_with_key(mock_get_supabase, mock_chat_reply, client):
+def test_chat_with_key(mock_get_supabase, mock_chat_reply, _mock_configured, client):
     mock_db = MagicMock()
     sessions = MagicMock()
     messages = MagicMock()
@@ -50,7 +51,7 @@ def test_chat_with_key(mock_get_supabase, mock_chat_reply, client):
             "features": payload["patient_data"],
             "prediction": {"risk_score": 0.2, "risk_label": "Low", "shap_explanation": {}},
         },
-        headers={"X-Anthropic-Api-Key": "test-key"},
+        headers={"X-Anthropic-Api-Key": "sk-ant-api03-testkey123456789"},
     )
     assert response.status_code == 200
     assert response.get_json()["reply"] == "Hi there"

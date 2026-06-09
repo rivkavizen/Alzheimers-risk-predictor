@@ -17,13 +17,14 @@
     <h1>New Assessment</h1>
     <div id="key-alert"></div>
     <div class="card">
-      <h2>Patient</h2>
+      <h2>Patient <span class="muted">(optional — needed only to save results)</span></h2>
       <label for="patient-select">Select existing patient</label>
-      <select id="patient-select"><option value="">-- New patient --</option></select>
+      <select id="patient-select"><option value="">-- None / new later --</option></select>
       <div id="new-patient-fields">
-        <label for="patient-name">New patient name</label>
+        <label for="patient-name">Or enter name now (for saving later)</label>
         <input id="patient-name" type="text" placeholder="Jane Doe" />
       </div>
+      <p id="db-hint" class="muted" style="display:none"></p>
     </div>
     <form id="assessment-form">
       <details open><summary>Demographics &amp; Lifestyle</summary><div class="grid-2" id="demographics"></div></details>
@@ -37,7 +38,10 @@
   </main>
   <script type="module">
     import { createPatient, listPatients, predict } from "/js/api.js";
-    import { collectFormData, FIELD_GROUPS, renderFields } from "/js/assessment.js";
+    import {
+      collectFormData, FIELD_GROUPS, renderFields,
+      validateAssessment, showValidationErrors,
+    } from "/js/assessment.js";
     import { hasApiKey } from "/js/settings.js";
 
     renderFields(document.getElementById("demographics"), FIELD_GROUPS.demographics);
@@ -60,7 +64,11 @@
           opt.textContent = p.name;
           select.appendChild(opt);
         });
-      } catch (_) { /* Supabase may not be configured yet */ }
+      } catch (err) {
+        document.getElementById("db-hint").style.display = "block";
+        document.getElementById("db-hint").textContent =
+          "Database not configured — you can still run assessments. Set up .env to save patients.";
+      }
     }
     loadPatients();
 
@@ -76,18 +84,21 @@
       loading.style.display = "inline";
 
       try {
-        let patientId = document.getElementById("patient-select").value;
-        if (!patientId) {
-          const name = document.getElementById("patient-name").value.trim();
-          if (!name) throw new Error("Enter a patient name or select an existing patient.");
-          const patient = await createPatient({ name });
-          patientId = patient.id;
-        }
+        const patientId = document.getElementById("patient-select").value || null;
+        const patientName = document.getElementById("patient-name").value.trim() || null;
 
         const patientData = collectFormData(e.target);
+        const validationErrors = validateAssessment(patientData);
+        if (validationErrors.length) {
+          showValidationErrors(validationErrors);
+          throw new Error(validationErrors.join("; "));
+        }
+        showValidationErrors([]);
+
         const result = await predict(patientData);
         sessionStorage.setItem("lastAssessment", JSON.stringify({
           patientId,
+          patientName,
           patientData,
           result,
         }));

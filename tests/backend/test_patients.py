@@ -42,24 +42,27 @@ def mock_supabase():
     return mock, patients_table, assessments_table
 
 
+@patch("routes.patients.is_supabase_configured", return_value=True)
 @patch("routes.patients.get_supabase")
-def test_create_patient(mock_get_supabase, client, mock_supabase):
+def test_create_patient(mock_get_supabase, _mock_configured, client, mock_supabase):
     mock_get_supabase.return_value = mock_supabase[0]
     response = client.post("/api/patients", json={"name": "Jane"})
     assert response.status_code == 201
     assert response.get_json()["name"] == "Jane"
 
 
+@patch("routes.patients.is_supabase_configured", return_value=True)
 @patch("routes.patients.get_supabase")
-def test_list_patients(mock_get_supabase, client, mock_supabase):
+def test_list_patients(mock_get_supabase, _mock_configured, client, mock_supabase):
     mock_get_supabase.return_value = mock_supabase[0]
     response = client.get("/api/patients")
     assert response.status_code == 200
     assert len(response.get_json()) == 1
 
 
+@patch("routes.patients.is_supabase_configured", return_value=True)
 @patch("routes.patients.get_supabase")
-def test_create_assessment(mock_get_supabase, client, mock_supabase):
+def test_create_assessment(mock_get_supabase, _mock_configured, client, mock_supabase):
     mock_get_supabase.return_value = mock_supabase[0]
     import json
 

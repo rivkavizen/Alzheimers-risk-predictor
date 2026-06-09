@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Trend Tracking</title>
   <link rel="stylesheet" href="/css/styles.css" />
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
 <body>
   <nav class="navbar">
@@ -26,7 +26,8 @@
         <div class="chart-wrap"><canvas id="risk-chart"></canvas></div>
       </div>
       <div class="card">
-        <h2>Cognitive metrics (normalized)</h2>
+        <h2>Cognitive metrics (0–100% scale, higher = better)</h2>
+        <p class="muted">MMSE max 30, Functional max 10. ADL is inverted so higher line = more independence.</p>
         <div class="chart-wrap"><canvas id="cognitive-chart"></canvas></div>
       </div>
       <div class="card">
@@ -38,15 +39,13 @@
   </main>
   <script type="module">
     import { getPatientHistory, listPatients } from "/js/api.js";
+    import {
+      buildCognitiveSeries,
+      cognitiveChartOptions,
+      riskChartOptions,
+    } from "/js/charts.js";
 
     let riskChart, cognitiveChart;
-
-    function normalize(values) {
-      const min = Math.min(...values);
-      const max = Math.max(...values);
-      if (max === min) return values.map(() => 0.5);
-      return values.map((v) => (v - min) / (max - min));
-    }
 
     function renderDeltaTable(assessments) {
       const el = document.getElementById("delta-table");
@@ -87,28 +86,36 @@
         const riskScores = assessments.map((a) => Number(a.risk_score));
 
         if (riskChart) riskChart.destroy();
-        riskChart = new Chart(document.getElementById("risk-chart"), {
+        riskChart = new window.Chart(document.getElementById("risk-chart"), {
           type: "line",
-          data: { labels, datasets: [{ label: "Risk score", data: riskScores, borderColor: "#2563eb" }] },
-          options: { responsive: true, maintainAspectRatio: false },
+          data: {
+            labels,
+            datasets: [{
+              label: "Risk score",
+              data: riskScores,
+              borderColor: "#2563eb",
+              backgroundColor: "rgba(37,99,235,0.1)",
+              fill: true,
+              pointRadius: 5,
+            }],
+          },
+          options: riskChartOptions(),
         });
 
-        const mmse = normalize(assessments.map((a) => Number(a.mmse)));
-        const fa = normalize(assessments.map((a) => Number(a.functional_assessment)));
-        const adl = normalize(assessments.map((a) => Number(a.adl)));
+        const cog = buildCognitiveSeries(assessments);
 
         if (cognitiveChart) cognitiveChart.destroy();
-        cognitiveChart = new Chart(document.getElementById("cognitive-chart"), {
+        cognitiveChart = new window.Chart(document.getElementById("cognitive-chart"), {
           type: "line",
           data: {
             labels,
             datasets: [
-              { label: "MMSE (norm)", data: mmse, borderColor: "#16a34a" },
-              { label: "Functional (norm)", data: fa, borderColor: "#f59e0b" },
-              { label: "ADL (norm)", data: adl, borderColor: "#dc2626" },
+              { label: "MMSE (% of 30)", data: cog.mmse, borderColor: "#16a34a", pointRadius: 5 },
+              { label: "Functional (% of 10)", data: cog.functional, borderColor: "#f59e0b", pointRadius: 5 },
+              { label: "ADL independence (% inverted)", data: cog.adlInverted, borderColor: "#dc2626", pointRadius: 5 },
             ],
           },
-          options: { responsive: true, maintainAspectRatio: false },
+          options: cognitiveChartOptions(cog.raw),
         });
 
         renderDeltaTable(assessments);

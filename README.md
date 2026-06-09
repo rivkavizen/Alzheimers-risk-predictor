@@ -46,8 +46,8 @@ Claude API keys are entered by each visitor in the browser Settings page — not
 
 ```powershell
 pip install -r backend/requirements.txt
-cd backend
-python app.py
+.\scripts\start.ps1
+# or: cd backend && python app.py
 # Open http://localhost:5000  (frontend + API)
 # GET  http://localhost:5000/api/health
 # POST http://localhost:5000/api/predict  (body: tests/fixtures/sample_patient.json)
@@ -65,8 +65,8 @@ Install CrewAI dependencies: `pip install -r backend/requirements.txt`
 
 | Variable | Value |
 |----------|--------|
-| `SUPABASE_URL` | Your Supabase project URL |
-| `SUPABASE_KEY` | Supabase **service role** key |
+| `SUPABASE_URL` | `https://puhtwpurgkqylnanortj.supabase.co` |
+| `SUPABASE_KEY` | [service_role key](https://supabase.com/dashboard/project/puhtwpurgkqylnanortj/settings/api) |
 | `MODEL_PATH` | `ml/model_artifacts/xgb_model.pkl` |
 | `FEATURE_NAMES_PATH` | `ml/model_artifacts/feature_names.json` |
 
@@ -77,12 +77,15 @@ Install CrewAI dependencies: `pip install -r backend/requirements.txt`
 
 ## Supabase setup (required for save/chat/history)
 
-1. Create a project at [supabase.com](https://supabase.com)
-2. **SQL Editor** → run in order:
+**Your project:** [Supabase dashboard](https://supabase.com/dashboard/project/puhtwpurgkqylnanortj)  
+**URL:** `https://puhtwpurgkqylnanortj.supabase.co`
+
+1. **SQL Editor** → run in order (see `supabase/README.md`):
    - `supabase/migrations/001_create_patients.sql`
    - `supabase/migrations/002_create_assessments.sql`
    - `supabase/migrations/003_create_chat_sessions.sql`
-3. **Settings → API** → copy URL + `service_role` key into Railway variables (and local `.env`)
+2. **[Settings → API](https://supabase.com/dashboard/project/puhtwpurgkqylnanortj/settings/api)** → copy **service_role** key into `.env` as `SUPABASE_KEY`
+3. Restart the server. URL is preconfigured in `backend/config.py` and `.env.example`
 
 ## CI (GitHub Actions)
 

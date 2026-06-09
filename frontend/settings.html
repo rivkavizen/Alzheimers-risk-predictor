@@ -18,24 +18,51 @@
     <div class="card">
       <h2>Your Claude API key</h2>
       <p class="muted">Required for AI recommendations and chat. Stored in your browser only.</p>
-      <p><a href="https://console.anthropic.com/" target="_blank" rel="noopener">Get a key from Anthropic Console</a></p>
+      <div class="alert warn">
+        <strong>Use an Anthropic key</strong> (starts with <code>sk-ant-</code>) from
+        <a href="https://console.anthropic.com/" target="_blank" rel="noopener">console.anthropic.com</a>.
+        <br>Do <strong>not</strong> use your Supabase key (<code>sb_secret_...</code>) here.
+      </div>
       <label for="api-key">API key</label>
-      <input id="api-key" type="password" placeholder="sk-ant-..." />
+      <input id="api-key" type="password" placeholder="sk-ant-api03-..." autocomplete="off" />
       <button id="save-key">Save key</button>
-      <button id="clear-key" class="secondary" style="margin-left:0.5rem">Clear key</button>
+      <button id="test-key" class="secondary" style="margin-left:0.5rem">Test key</button>
+      <button id="clear-key" class="secondary" style="margin-left:0.5rem">Clear</button>
       <div id="status" style="margin-top:1rem"></div>
     </div>
   </main>
   <script type="module">
-    import { getApiKey, saveApiKey, clearApiKey } from "/js/settings.js";
+    import { validateApiKey } from "/js/api.js";
+    import { getApiKey, saveApiKey, clearApiKey, validateKeyFormat, normalizeApiKey } from "/js/settings.js";
 
     const input = document.getElementById("api-key");
     const status = document.getElementById("status");
     input.value = getApiKey();
 
-    document.getElementById("save-key").addEventListener("click", () => {
-      saveApiKey(input.value);
-      status.innerHTML = '<div class="alert info">API key saved locally.</div>';
+    document.getElementById("save-key").addEventListener("click", async () => {
+      try {
+        saveApiKey(input.value);
+        status.innerHTML = '<div class="alert info">Key saved. Click "Test key" to verify.</div>';
+      } catch (err) {
+        status.innerHTML = `<div class="alert error">${err.message}</div>`;
+      }
+    });
+
+    document.getElementById("test-key").addEventListener("click", async () => {
+      const key = normalizeApiKey(input.value) || getApiKey();
+      const fmt = validateKeyFormat(key);
+      if (fmt) {
+        status.innerHTML = `<div class="alert error">${fmt}</div>`;
+        return;
+      }
+      status.innerHTML = '<div class="alert info">Testing key...</div>';
+      try {
+        const result = await validateApiKey(key);
+        saveApiKey(key);
+        status.innerHTML = `<div class="alert info">${result.message}</div>`;
+      } catch (err) {
+        status.innerHTML = `<div class="alert error">${err.message}</div>`;
+      }
     });
 
     document.getElementById("clear-key").addEventListener("click", () => {

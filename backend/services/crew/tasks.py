@@ -37,10 +37,10 @@ def chat_reply_task(agent, context: str, history: str, user_message: str):
             "Patient context:\n{context}\n\n"
             "Conversation so far:\n{history}\n\n"
             "User message: {user_message}\n\n"
-            "Reply helpfully in plain language. Never diagnose. "
-            "If you need one clarifying question, end with FOLLOW_UP: <question>."
+            "Reply in plain conversational text only (no markdown, no bullets, no headers). "
+            "Answer their question in the first sentence. Max ~150 words. Never diagnose."
         ),
-        expected_output="A helpful conversational reply for the patient.",
+        expected_output="A short plain-text chat reply (2-4 paragraphs, no markdown).",
         agent=agent,
     )
 

@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 import re
 
+from services.anthropic_client import chat_direct, generate_recommendations_direct
+from services.chat_format import clean_chat_reply
 from services.crew.agents import build_llm
 from services.crew.tasks import build_chat_task, build_recommendation_tasks
 from services.crew.tools import format_patient_context
@@ -37,17 +39,24 @@ def _split_follow_up(reply: str) -> tuple[str, str | None]:
     return message, question or None
 
 
-def generate_recommendations(api_key: str, features: dict, prediction: dict) -> dict:
+def _crew_recommendations(api_key: str, context: str) -> dict:
     from crewai import Crew, Process
 
-    context = format_patient_context(features, prediction)
     llm = build_llm(api_key)
     agents, tasks = build_recommendation_tasks(llm, context)
     crew = Crew(agents=agents, tasks=tasks, process=Process.sequential, verbose=False)
     result = crew.kickoff(inputs={"context": context})
     raw = str(result)
-    recommendations = _parse_recommendations(raw)
-    return {"risk_analysis": raw, "recommendations": recommendations}
+    return {"risk_analysis": raw, "recommendations": _parse_recommendations(raw)}
+
+
+def generate_recommendations(api_key: str, features: dict, prediction: dict) -> dict:
+    context = format_patient_context(features, prediction)
+    try:
+        return _crew_recommendations(api_key, context)
+    except Exception:
+        raw, recommendations = generate_recommendations_direct(api_key, context)
+        return {"risk_analysis": raw, "recommendations": recommendations}
 
 
 def chat_reply(
@@ -57,15 +66,21 @@ def chat_reply(
     history: list[dict],
     user_message: str,
 ) -> dict:
-    from crewai import Crew, Process
-
     context = format_patient_context(features, prediction)
     history_text = "\n".join(f"{m['role']}: {m['content']}" for m in history)
-    llm = build_llm(api_key)
-    agents, tasks = build_chat_task(llm, context, history_text, user_message)
-    crew = Crew(agents=agents, tasks=tasks, process=Process.sequential, verbose=False)
-    result = crew.kickoff(
-        inputs={"context": context, "history": history_text, "user_message": user_message}
-    )
-    reply, follow_up = _split_follow_up(str(result))
+
+    try:
+        from crewai import Crew, Process
+
+        llm = build_llm(api_key)
+        agents, tasks = build_chat_task(llm, context, history_text, user_message)
+        crew = Crew(agents=agents, tasks=tasks, process=Process.sequential, verbose=False)
+        result = crew.kickoff(
+            inputs={"context": context, "history": history_text, "user_message": user_message}
+        )
+        reply, follow_up = _split_follow_up(clean_chat_reply(str(result)))
+    except Exception:
+        reply = chat_direct(api_key, context, history_text, user_message)
+        reply, follow_up = _split_follow_up(clean_chat_reply(reply))
+
     return {"reply": reply, "follow_up_question": follow_up}

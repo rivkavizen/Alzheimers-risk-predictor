@@ -10,9 +10,18 @@ async function request(path, options = {}) {
   }
 
   const response = await fetch(`${API_BASE}${path}`, { ...options, headers });
-  const data = await response.json().catch(() => ({}));
+  const text = await response.text();
+  let data = {};
+  if (text) {
+    try {
+      data = JSON.parse(text);
+    } catch {
+      data = { error: text.slice(0, 200) };
+    }
+  }
   if (!response.ok) {
-    throw new Error(data.error || `Request failed (${response.status})`);
+    const detail = data.details?.length ? `: ${data.details.join("; ")}` : "";
+    throw new Error((data.error || `Request failed (${response.status})`) + detail);
   }
   return data;
 }
@@ -59,4 +68,12 @@ export function sendChat(payload) {
 
 export function getChat(sessionId) {
   return request(`/api/chat/${sessionId}`);
+}
+
+export function validateApiKey(apiKey) {
+  return request("/api/validate-api-key", {
+    method: "POST",
+    body: JSON.stringify({ api_key: apiKey }),
+    headers: { "X-Anthropic-Api-Key": apiKey },
+  });
 }

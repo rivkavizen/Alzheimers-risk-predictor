@@ -8,7 +8,11 @@ export function renderShapChart(canvas, shapExplanation) {
   const values = entries.map(([, v]) => v);
   const colors = values.map((v) => (v >= 0 ? "rgba(220,38,38,0.7)" : "rgba(22,163,74,0.7)"));
 
-  return new Chart(canvas, {
+  const ChartLib = window.Chart;
+  if (!ChartLib) {
+    throw new Error("Chart.js failed to load. Check your internet connection and refresh.");
+  }
+  return new ChartLib(canvas, {
     type: "bar",
     data: {
       labels,

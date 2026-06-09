@@ -1,7 +1,9 @@
 def build_llm(api_key: str):
     from crewai import LLM
 
-    return LLM(model="anthropic/claude-sonnet-4-6", api_key=api_key)
+    from config import ANTHROPIC_MODEL
+
+    return LLM(model=ANTHROPIC_MODEL, api_key=api_key)
 
 
 def risk_analyst(llm):
@@ -37,14 +39,12 @@ def recommendation_advisor(llm):
 def health_coach(llm):
     from crewai import Agent
 
+    from services.chat_format import CHAT_SYSTEM_PROMPT
+
     return Agent(
         role="Health Coach",
-        goal="Answer patient follow-up questions about their assessment and recommendations.",
-        backstory=(
-            "You are supportive and concise. You use the patient's data and prior messages. "
-            "You may ask one clarifying follow-up per turn using the suffix "
-            "FOLLOW_UP: <your question> on its own line at the end when needed."
-        ),
+        goal="Answer follow-up questions in short, plain conversational text.",
+        backstory=CHAT_SYSTEM_PROMPT,
         llm=llm,
         verbose=False,
     )

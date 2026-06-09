@@ -1,43 +1,45 @@
+import { FIELD_RULES, validateAssessment } from "./validation.js";
+
 export const FIELD_GROUPS = {
   demographics: [
-    ["age", "Age", "number"],
-    ["gender", "Gender (0=F, 1=M)", "number"],
-    ["ethnicity", "Ethnicity (0-3)", "number"],
-    ["education_level", "Education level (0-3)", "number"],
-    ["bmi", "BMI", "number"],
-    ["smoking", "Smoking (0/1)", "number"],
-    ["alcohol_consumption", "Alcohol consumption", "number"],
-    ["physical_activity", "Physical activity", "number"],
-    ["diet_quality", "Diet quality", "number"],
-    ["sleep_quality", "Sleep quality", "number"],
+    ["age", "Age (50–100)"],
+    ["gender", "Gender (0=F, 1=M)"],
+    ["ethnicity", "Ethnicity (0–3)"],
+    ["education_level", "Education level (0–3)"],
+    ["bmi", "BMI (10–60)"],
+    ["smoking", "Smoking (0/1)"],
+    ["alcohol_consumption", "Alcohol consumption (0–30)"],
+    ["physical_activity", "Physical activity (0–15)"],
+    ["diet_quality", "Diet quality (0–10)"],
+    ["sleep_quality", "Sleep quality (0–10)"],
   ],
   medical: [
-    ["family_history_alzheimers", "Family history (0/1)", "number"],
-    ["cardiovascular_disease", "Cardiovascular disease (0/1)", "number"],
-    ["diabetes", "Diabetes (0/1)", "number"],
-    ["depression", "Depression (0/1)", "number"],
-    ["head_injury", "Head injury (0/1)", "number"],
-    ["hypertension", "Hypertension (0/1)", "number"],
+    ["family_history_alzheimers", "Family history (0/1)"],
+    ["cardiovascular_disease", "Cardiovascular disease (0/1)"],
+    ["diabetes", "Diabetes (0/1)"],
+    ["depression", "Depression (0/1)"],
+    ["head_injury", "Head injury (0/1)"],
+    ["hypertension", "Hypertension (0/1)"],
   ],
   labs: [
-    ["systolic_bp", "Systolic BP", "number"],
-    ["diastolic_bp", "Diastolic BP", "number"],
-    ["cholesterol_total", "Total cholesterol", "number"],
-    ["cholesterol_ldl", "LDL cholesterol", "number"],
-    ["cholesterol_hdl", "HDL cholesterol", "number"],
-    ["cholesterol_triglycerides", "Triglycerides", "number"],
+    ["systolic_bp", "Systolic BP (60–200)"],
+    ["diastolic_bp", "Diastolic BP (40–130)"],
+    ["cholesterol_total", "Total cholesterol (50–400)"],
+    ["cholesterol_ldl", "LDL cholesterol (20–300)"],
+    ["cholesterol_hdl", "HDL cholesterol (10–120)"],
+    ["cholesterol_triglycerides", "Triglycerides (30–500)"],
   ],
   cognitive: [
-    ["mmse", "MMSE (0-30)", "number"],
-    ["functional_assessment", "Functional assessment", "number"],
-    ["memory_complaints", "Memory complaints (0/1)", "number"],
-    ["behavioral_problems", "Behavioral problems (0/1)", "number"],
-    ["adl", "ADL score", "number"],
-    ["confusion", "Confusion (0/1)", "number"],
-    ["disorientation", "Disorientation (0/1)", "number"],
-    ["personality_changes", "Personality changes (0/1)", "number"],
-    ["difficulty_completing_tasks", "Difficulty completing tasks (0/1)", "number"],
-    ["forgetfulness", "Forgetfulness (0/1)", "number"],
+    ["mmse", "MMSE (0–30)"],
+    ["functional_assessment", "Functional assessment (0–10)"],
+    ["memory_complaints", "Memory complaints (0/1)"],
+    ["behavioral_problems", "Behavioral problems (0/1)"],
+    ["adl", "ADL score (0–10)"],
+    ["confusion", "Confusion (0/1)"],
+    ["disorientation", "Disorientation (0/1)"],
+    ["personality_changes", "Personality changes (0/1)"],
+    ["difficulty_completing_tasks", "Difficulty completing tasks (0/1)"],
+    ["forgetfulness", "Forgetfulness (0/1)"],
   ],
 };
 
@@ -62,10 +64,39 @@ export function collectFormData(form) {
   return data;
 }
 
+export { validateAssessment };
+
 export function renderFields(container, fields) {
-  container.innerHTML = fields.map(([name, label, type]) => `
-    <label for="${name}">${label}</label>
-    <input id="${name}" name="${name}" type="${type}" step="any"
-      value="${DEFAULTS[name] ?? ""}" required />
-  `).join("");
+  container.innerHTML = fields.map(([name, label]) => {
+    const rule = FIELD_RULES[name];
+    const step = rule?.integer ? "1" : "any";
+    const min = rule?.min ?? "";
+    const max = rule?.max ?? "";
+    return `
+    <div class="field-wrap" data-field="${name}">
+      <label for="${name}">${label}</label>
+      <input id="${name}" name="${name}" type="number" step="${step}"
+        min="${min}" max="${max}" value="${DEFAULTS[name] ?? ""}" required />
+      <small class="field-error muted" id="err-${name}"></small>
+    </div>`;
+  }).join("");
+}
+
+export function showValidationErrors(errors) {
+  document.querySelectorAll(".field-error").forEach((el) => { el.textContent = ""; });
+  document.querySelectorAll(".field-wrap input").forEach((el) => {
+    el.style.borderColor = "";
+  });
+
+  errors.forEach((msg) => {
+    const field = Object.keys(FIELD_RULES).find((f) =>
+      msg.toLowerCase().startsWith(FIELD_RULES[f].label.toLowerCase()) || msg.startsWith(f)
+    );
+    if (field) {
+      const errEl = document.getElementById(`err-${field}`);
+      const input = document.getElementById(field);
+      if (errEl) errEl.textContent = msg;
+      if (input) input.style.borderColor = "#dc2626";
+    }
+  });
 }
