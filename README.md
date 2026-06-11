@@ -2,7 +2,8 @@
 
 ML-powered risk assessment with SHAP explanations, CrewAI recommendations, and patient trend tracking.
 
-**Repository:** https://github.com/rivkavizen/Alzheimers-risk-predictor
+**Repository:** https://github.com/rivkavizen/Alzheimers-risk-predictor  
+**Live app:** https://alzheimers-risk-predictor-production.up.railway.app
 
 ## Quick start (ML pipeline)
 
@@ -70,8 +71,9 @@ Install CrewAI dependencies: `pip install -r backend/requirements.txt`
 | `MODEL_PATH` | `ml/model_artifacts/xgb_model.pkl` |
 | `FEATURE_NAMES_PATH` | `ml/model_artifacts/feature_names.json` |
 
-5. Deploy. Open the generated URL → frontend + API on one domain.
-6. Verify: `GET https://your-app.up.railway.app/api/health` → `{"status":"ok"}`
+5. Deploy (`railway up` or push to GitHub if connected). Root `requirements.txt` points at `backend/requirements.txt` for Nixpacks.
+6. Generate a public domain in **Networking** if needed.
+7. Verify: `GET https://alzheimers-risk-predictor-production.up.railway.app/api/health` → `{"status":"ok"}`
 
 **Note:** Claude API keys are **not** set on Railway — each visitor enters their own key in **Settings**.
 
