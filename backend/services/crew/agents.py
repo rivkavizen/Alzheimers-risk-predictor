@@ -36,6 +36,68 @@ def recommendation_advisor(llm):
     )
 
 
+def data_engineer(llm):
+    from crewai import Agent
+
+    return Agent(
+        role="Data Engineer",
+        goal="Clean raw data and publish dataset_contract.json for downstream agents.",
+        backstory=(
+            "You own data quality and schema governance. You run ml/clean_data.py (engineer step) "
+            "to produce the cleaned CSV and dataset_contract.json with schema, allowed values, "
+            "assumptions, and constraints that the Data Scientist must follow."
+        ),
+        llm=llm,
+        verbose=False,
+    )
+
+
+def data_analyst(llm):
+    from crewai import Agent
+
+    return Agent(
+        role="Data Analyst",
+        goal="Produce eda_report.html with visual exploratory analysis of the cleaned dataset.",
+        backstory=(
+            "You are a healthcare data analyst focused on charts and statistical profiles. "
+            "You run the analyst step in ml/data_pipeline.py and deliver eda_report.html only."
+        ),
+        llm=llm,
+        verbose=False,
+    )
+
+
+def insights_analyst(llm):
+    from crewai import Agent
+
+    return Agent(
+        role="Insights Analyst",
+        goal="Translate EDA findings into business-facing insights.md summaries.",
+        backstory=(
+            "You bridge analytics and stakeholders. You read the cleaned data and EDA context, "
+            "then produce insights.md with executive summaries, risk patterns, and modeling guidance."
+        ),
+        llm=llm,
+        verbose=False,
+    )
+
+
+def data_scientist(llm):
+    from crewai import Agent
+
+    return Agent(
+        role="Data Scientist",
+        goal="Train and evaluate models that strictly follow dataset_contract.json.",
+        backstory=(
+            "You never train on forbidden columns and you validate every feature against "
+            "dataset_contract.json before fitting. You use ml/train.py, respect class imbalance, "
+            "and produce interpretable models with SHAP support."
+        ),
+        llm=llm,
+        verbose=False,
+    )
+
+
 def health_coach(llm):
     from crewai import Agent
 

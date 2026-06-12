@@ -89,10 +89,11 @@ def run(
     input_path: Path | str = RAW_DATA_PATH,
     output_path: Path | str = CLEANED_DATA_PATH,
 ) -> dict:
-    df = load_raw_data(input_path)
-    cleaned, report = clean_data(df)
-    save_cleaned(cleaned, output_path)
-    report["output_path"] = str(output_path)
+    from data_pipeline import REPORT_CACHE, run_pre_scientist_pipeline
+
+    pipeline = run_pre_scientist_pipeline(input_path=input_path, output_path=output_path)
+    report = json.loads(REPORT_CACHE.read_text(encoding="utf-8"))
+    report["pipeline"] = pipeline
     return report
 
 

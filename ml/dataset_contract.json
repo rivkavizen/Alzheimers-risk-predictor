@@ -1,0 +1,484 @@
+{
+  "version": "1.0",
+  "generated_at": "2026-06-12T07:09:39.569411+00:00",
+  "dataset": {
+    "name": "Alzheimer's Disease Risk Dataset",
+    "raw_source": "alzheimers_disease_data.csv",
+    "cleaned_source": "alzheimers_disease_data_cleaned.csv",
+    "target_column": "Diagnosis",
+    "dropped_columns": [
+      "PatientID",
+      "DoctorInCharge"
+    ],
+    "row_count": 2149,
+    "cleaning_report": {
+      "rows_in": 2149,
+      "dropped_duplicates": 0,
+      "dropped_duplicate_patient_id": 0,
+      "dropped_nulls": 0,
+      "dropped_invalid_target": 0,
+      "dropped_invalid_binary": 0,
+      "dropped_invalid_ordinal": 0,
+      "dropped_out_of_range": 0,
+      "rows_out": 2149,
+      "rows_dropped": 0,
+      "output_path": "C:\\personal\\AI_course\\FinalProject\\alzheimers_disease_data_cleaned.csv"
+    }
+  },
+  "schema": {
+    "Age": {
+      "type": "continuous",
+      "dtype": "float",
+      "api_field": "age",
+      "min": 50,
+      "max": 100,
+      "nullable": false
+    },
+    "BMI": {
+      "type": "continuous",
+      "dtype": "float",
+      "api_field": "bmi",
+      "min": 10,
+      "max": 60,
+      "nullable": false
+    },
+    "AlcoholConsumption": {
+      "type": "continuous",
+      "dtype": "float",
+      "api_field": "alcohol_consumption",
+      "min": 0,
+      "max": 30,
+      "nullable": false
+    },
+    "PhysicalActivity": {
+      "type": "continuous",
+      "dtype": "float",
+      "api_field": "physical_activity",
+      "min": 0,
+      "max": 15,
+      "nullable": false
+    },
+    "DietQuality": {
+      "type": "continuous",
+      "dtype": "float",
+      "api_field": "diet_quality",
+      "min": 0,
+      "max": 10,
+      "nullable": false
+    },
+    "SleepQuality": {
+      "type": "continuous",
+      "dtype": "float",
+      "api_field": "sleep_quality",
+      "min": 0,
+      "max": 10,
+      "nullable": false
+    },
+    "SystolicBP": {
+      "type": "continuous",
+      "dtype": "float",
+      "api_field": "systolic_bp",
+      "min": 60,
+      "max": 200,
+      "nullable": false
+    },
+    "DiastolicBP": {
+      "type": "continuous",
+      "dtype": "float",
+      "api_field": "diastolic_bp",
+      "min": 40,
+      "max": 130,
+      "nullable": false
+    },
+    "CholesterolTotal": {
+      "type": "continuous",
+      "dtype": "float",
+      "api_field": "cholesterol_total",
+      "min": 50,
+      "max": 400,
+      "nullable": false
+    },
+    "CholesterolLDL": {
+      "type": "continuous",
+      "dtype": "float",
+      "api_field": "cholesterol_ldl",
+      "min": 20,
+      "max": 300,
+      "nullable": false
+    },
+    "CholesterolHDL": {
+      "type": "continuous",
+      "dtype": "float",
+      "api_field": "cholesterol_hdl",
+      "min": 10,
+      "max": 120,
+      "nullable": false
+    },
+    "CholesterolTriglycerides": {
+      "type": "continuous",
+      "dtype": "float",
+      "api_field": "cholesterol_triglycerides",
+      "min": 30,
+      "max": 500,
+      "nullable": false
+    },
+    "MMSE": {
+      "type": "continuous",
+      "dtype": "float",
+      "api_field": "mmse",
+      "min": 0,
+      "max": 30,
+      "nullable": false
+    },
+    "FunctionalAssessment": {
+      "type": "continuous",
+      "dtype": "float",
+      "api_field": "functional_assessment",
+      "min": 0,
+      "max": 10,
+      "nullable": false
+    },
+    "ADL": {
+      "type": "continuous",
+      "dtype": "float",
+      "api_field": "adl",
+      "min": 0,
+      "max": 10,
+      "nullable": false
+    },
+    "Ethnicity": {
+      "type": "ordinal",
+      "dtype": "integer",
+      "api_field": "ethnicity",
+      "min": 0,
+      "max": 3,
+      "nullable": false
+    },
+    "EducationLevel": {
+      "type": "ordinal",
+      "dtype": "integer",
+      "api_field": "education_level",
+      "min": 0,
+      "max": 3,
+      "nullable": false
+    },
+    "Gender": {
+      "type": "binary",
+      "dtype": "integer",
+      "api_field": "gender",
+      "allowed_values": [
+        0,
+        1
+      ],
+      "nullable": false
+    },
+    "Smoking": {
+      "type": "binary",
+      "dtype": "integer",
+      "api_field": "smoking",
+      "allowed_values": [
+        0,
+        1
+      ],
+      "nullable": false
+    },
+    "FamilyHistoryAlzheimers": {
+      "type": "binary",
+      "dtype": "integer",
+      "api_field": "family_history_alzheimers",
+      "allowed_values": [
+        0,
+        1
+      ],
+      "nullable": false
+    },
+    "CardiovascularDisease": {
+      "type": "binary",
+      "dtype": "integer",
+      "api_field": "cardiovascular_disease",
+      "allowed_values": [
+        0,
+        1
+      ],
+      "nullable": false
+    },
+    "Diabetes": {
+      "type": "binary",
+      "dtype": "integer",
+      "api_field": "diabetes",
+      "allowed_values": [
+        0,
+        1
+      ],
+      "nullable": false
+    },
+    "Depression": {
+      "type": "binary",
+      "dtype": "integer",
+      "api_field": "depression",
+      "allowed_values": [
+        0,
+        1
+      ],
+      "nullable": false
+    },
+    "HeadInjury": {
+      "type": "binary",
+      "dtype": "integer",
+      "api_field": "head_injury",
+      "allowed_values": [
+        0,
+        1
+      ],
+      "nullable": false
+    },
+    "Hypertension": {
+      "type": "binary",
+      "dtype": "integer",
+      "api_field": "hypertension",
+      "allowed_values": [
+        0,
+        1
+      ],
+      "nullable": false
+    },
+    "MemoryComplaints": {
+      "type": "binary",
+      "dtype": "integer",
+      "api_field": "memory_complaints",
+      "allowed_values": [
+        0,
+        1
+      ],
+      "nullable": false
+    },
+    "BehavioralProblems": {
+      "type": "binary",
+      "dtype": "integer",
+      "api_field": "behavioral_problems",
+      "allowed_values": [
+        0,
+        1
+      ],
+      "nullable": false
+    },
+    "Confusion": {
+      "type": "binary",
+      "dtype": "integer",
+      "api_field": "confusion",
+      "allowed_values": [
+        0,
+        1
+      ],
+      "nullable": false
+    },
+    "Disorientation": {
+      "type": "binary",
+      "dtype": "integer",
+      "api_field": "disorientation",
+      "allowed_values": [
+        0,
+        1
+      ],
+      "nullable": false
+    },
+    "PersonalityChanges": {
+      "type": "binary",
+      "dtype": "integer",
+      "api_field": "personality_changes",
+      "allowed_values": [
+        0,
+        1
+      ],
+      "nullable": false
+    },
+    "DifficultyCompletingTasks": {
+      "type": "binary",
+      "dtype": "integer",
+      "api_field": "difficulty_completing_tasks",
+      "allowed_values": [
+        0,
+        1
+      ],
+      "nullable": false
+    },
+    "Forgetfulness": {
+      "type": "binary",
+      "dtype": "integer",
+      "api_field": "forgetfulness",
+      "allowed_values": [
+        0,
+        1
+      ],
+      "nullable": false
+    },
+    "Diagnosis": {
+      "type": "binary",
+      "dtype": "integer",
+      "api_field": "diagnosis",
+      "allowed_values": [
+        0,
+        1
+      ],
+      "labels": {
+        "0": "no_diagnosis",
+        "1": "diagnosis"
+      },
+      "nullable": false
+    }
+  },
+  "allowed_values": {
+    "binary": [
+      0,
+      1
+    ],
+    "ordinal": {
+      "Ethnicity": [
+        0,
+        3
+      ],
+      "EducationLevel": [
+        0,
+        3
+      ]
+    },
+    "continuous": {
+      "Age": [
+        50,
+        100
+      ],
+      "BMI": [
+        10,
+        60
+      ],
+      "AlcoholConsumption": [
+        0,
+        30
+      ],
+      "PhysicalActivity": [
+        0,
+        15
+      ],
+      "DietQuality": [
+        0,
+        10
+      ],
+      "SleepQuality": [
+        0,
+        10
+      ],
+      "SystolicBP": [
+        60,
+        200
+      ],
+      "DiastolicBP": [
+        40,
+        130
+      ],
+      "CholesterolTotal": [
+        50,
+        400
+      ],
+      "CholesterolLDL": [
+        20,
+        300
+      ],
+      "CholesterolHDL": [
+        10,
+        120
+      ],
+      "CholesterolTriglycerides": [
+        30,
+        500
+      ],
+      "MMSE": [
+        0,
+        30
+      ],
+      "FunctionalAssessment": [
+        0,
+        10
+      ],
+      "ADL": [
+        0,
+        10
+      ]
+    },
+    "target": [
+      0,
+      1
+    ]
+  },
+  "assumptions": [
+    "Each row represents one patient record with a binary Alzheimer's diagnosis label.",
+    "Cleaned data excludes identifier and free-text columns (PatientID, DoctorInCharge).",
+    "Allowed value ranges reflect clinical plausibility filters applied during cleaning.",
+    "Ordinal fields (Ethnicity, EducationLevel) are coded integers, not raw categories.",
+    "Binary symptom and lifestyle fields are encoded as 0 (no/absent) or 1 (yes/present).",
+    "Training uses only features listed in model_features; Diagnosis is the sole target.",
+    "API submissions use snake_case field names mapped to model PascalCase columns."
+  ],
+  "constraints": [
+    "No null values in any feature or target column after cleaning.",
+    "Binary columns must equal exactly 0 or 1.",
+    "Ordinal columns must be integers within their documented min\u2013max range.",
+    "Continuous columns must fall within documented min\u2013max bounds.",
+    "Target Diagnosis must be 0 or 1 only.",
+    "PatientID and DoctorInCharge must never be used as model inputs.",
+    "Feature order at inference must match ml/model_artifacts/feature_names.json.",
+    "Retraining must read from alzheimers_disease_data_cleaned.csv, not the raw file."
+  ],
+  "model_features": [
+    "Age",
+    "BMI",
+    "AlcoholConsumption",
+    "PhysicalActivity",
+    "DietQuality",
+    "SleepQuality",
+    "SystolicBP",
+    "DiastolicBP",
+    "CholesterolTotal",
+    "CholesterolLDL",
+    "CholesterolHDL",
+    "CholesterolTriglycerides",
+    "MMSE",
+    "FunctionalAssessment",
+    "ADL",
+    "Gender",
+    "Ethnicity",
+    "EducationLevel",
+    "Smoking",
+    "FamilyHistoryAlzheimers",
+    "CardiovascularDisease",
+    "Diabetes",
+    "Depression",
+    "HeadInjury",
+    "Hypertension",
+    "MemoryComplaints",
+    "BehavioralProblems",
+    "Confusion",
+    "Disorientation",
+    "PersonalityChanges",
+    "DifficultyCompletingTasks",
+    "Forgetfulness"
+  ],
+  "for_data_scientist": {
+    "must_read_before_training": true,
+    "train_script": "ml/train.py",
+    "pipeline_script": "ml/data_pipeline.py",
+    "pre_scientist_agents": [
+      "Data Engineer",
+      "Data Analyst",
+      "Insights Analyst"
+    ],
+    "required_artifacts": [
+      "ml/model_artifacts/xgb_model.pkl",
+      "ml/model_artifacts/feature_names.json"
+    ],
+    "forbidden_columns": [
+      "PatientID",
+      "DoctorInCharge"
+    ],
+    "validation_reference": "backend/services/validation.py"
+  }
+}

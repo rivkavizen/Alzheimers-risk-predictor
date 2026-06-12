@@ -14,6 +14,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 
 from cleaning_config import CLEANED_DATA_PATH
+from dataset_contract import CONTRACT_PATH, build_contract, save_contract, validate_training_frame
 
 ARTIFACTS_DIR = Path(__file__).resolve().parent / "model_artifacts"
 MODEL_PATH = ARTIFACTS_DIR / "xgb_model.pkl"
@@ -95,6 +96,7 @@ def build_pipeline(scale_pos_weight: float) -> Pipeline:
 def train_and_save(data_path: Path = CLEANED_DATA_PATH) -> dict:
     df = load_cleaned_data(data_path)
     feature_columns = CONTINUOUS_COLUMNS + PASSTHROUGH_COLUMNS
+    validate_training_frame(df, feature_columns)
     X = df[feature_columns]
     y = df[TARGET_COLUMN]
 
@@ -117,6 +119,19 @@ def train_and_save(data_path: Path = CLEANED_DATA_PATH) -> dict:
 
     joblib.dump(pipeline, MODEL_PATH)
     FEATURE_NAMES_PATH.write_text(json.dumps(feature_columns, indent=2))
+
+    if CONTRACT_PATH.exists():
+        cleaning_report = {}
+        cache = Path(__file__).resolve().parent / "last_cleaning_report.json"
+        if cache.exists():
+            cleaning_report = json.loads(cache.read_text(encoding="utf-8"))
+        save_contract(
+            build_contract(
+                cleaning_report=cleaning_report,
+                row_count=len(df),
+                model_features=feature_columns,
+            )
+        )
 
     metrics = {
         "cv_auc": round(cv_auc, 4),

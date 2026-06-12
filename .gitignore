@@ -28,6 +28,9 @@ htmlcov/
 # Jupyter
 .ipynb_checkpoints/
 
+# ML pipeline cache
+ml/last_cleaning_report.json
+
 # Office / planning docs (local only)
 *.docx
 ~$*

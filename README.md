@@ -11,8 +11,9 @@ ML-powered risk assessment with SHAP explanations, CrewAI recommendations, and p
 cd c:\personal\AI_course\FinalProject
 pip install -r requirements-dev.txt
 
-# Step 1: Clean raw data
+# Step 1: Pre-scientist pipeline (3 agents → then Data Scientist trains in step 2)
 python ml/clean_data.py
+# Engineer: dataset_contract.json | Analyst: eda_report.html | Insights Analyst: insights.md
 
 # Step 2: Train model
 python ml/train.py
@@ -33,9 +34,15 @@ pytest tests/ml/ -v
 |------|---------|
 | `alzheimers_disease_data.csv` | Raw data (never overwritten) |
 | `alzheimers_disease_data_cleaned.csv` | Produced by `ml/clean_data.py` |
+| `ml/dataset_contract.json` | Data Engineer → contract for Data Scientist |
+| `ml/eda_report.html` | Data Analyst → visual EDA report |
+| `ml/insights.md` | Insights Analyst → business summary |
+| `ml/data_pipeline.py` | Orchestrates 3 pre-scientist agents |
 | `ml/model_artifacts/` | Trained model + feature names |
 
 After changing the raw dataset, re-run `clean_data.py` → `train.py` → `evaluate.py`.
+
+Re-run full pre-scientist pipeline: `python ml/data_pipeline.py`
 
 ## Environment variables
 

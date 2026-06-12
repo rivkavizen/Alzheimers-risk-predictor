@@ -1,4 +1,12 @@
-from services.crew.agents import health_coach, recommendation_advisor, risk_analyst
+from services.crew.agents import (
+    data_analyst,
+    data_engineer,
+    data_scientist,
+    health_coach,
+    insights_analyst,
+    recommendation_advisor,
+    risk_analyst,
+)
 
 
 def analyze_risk_task(agent, context: str):
@@ -43,6 +51,81 @@ def chat_reply_task(agent, context: str, history: str, user_message: str):
         expected_output="A short plain-text chat reply (2-4 paragraphs, no markdown).",
         agent=agent,
     )
+
+
+def clean_and_contract_task(agent):
+    from crewai import Task
+
+    return Task(
+        description=(
+            "Run the Data Engineer step: ml/data_pipeline.py run_engineer (or ml/clean_data.py). "
+            "Deliverables: cleaned CSV and dataset_contract.json with schema, allowed values, "
+            "assumptions, and constraints."
+        ),
+        expected_output=(
+            "Confirmation that cleaned data and dataset_contract.json exist with row counts "
+            "and cleaning summary."
+        ),
+        agent=agent,
+    )
+
+
+def produce_eda_report_task(agent):
+    from crewai import Task
+
+    return Task(
+        description=(
+            "Run the Data Analyst step after cleaning. Produce eda_report.html with charts "
+            "for class balance, demographics, MMSE, correlations, and lifestyle factors."
+        ),
+        expected_output="Confirmation that eda_report.html exists and summarizes cohort visuals.",
+        agent=agent,
+    )
+
+
+def produce_insights_task(agent):
+    from crewai import Task
+
+    return Task(
+        description=(
+            "Run the Insights Analyst step after EDA. Produce insights.md with executive summary, "
+            "key statistical signals, modifiable risk patterns, and recommendations for modeling."
+        ),
+        expected_output="Confirmation that insights.md exists with business-facing findings.",
+        agent=agent,
+    )
+
+
+def train_model_task(agent):
+    from crewai import Task
+
+    return Task(
+        description=(
+            "Read dataset_contract.json before training. Train XGBoost via ml/train.py "
+            "using only model_features from the contract. Validate forbidden columns are "
+            "excluded and document CV AUC."
+        ),
+        expected_output="Training metrics JSON with cv_auc and confirmation of contract compliance.",
+        agent=agent,
+    )
+
+
+def build_data_pipeline_tasks(llm):
+    engineer = data_engineer(llm)
+    analyst = data_analyst(llm)
+    insights = insights_analyst(llm)
+    scientist = data_scientist(llm)
+
+    t1 = clean_and_contract_task(engineer)
+    t2 = produce_eda_report_task(analyst)
+    t3 = produce_insights_task(insights)
+    t4 = train_model_task(scientist)
+
+    t2.context = [t1]
+    t3.context = [t1, t2]
+    t4.context = [t1, t2, t3]
+
+    return [engineer, analyst, insights, scientist], [t1, t2, t3, t4]
 
 
 def build_recommendation_tasks(llm, context: str):
