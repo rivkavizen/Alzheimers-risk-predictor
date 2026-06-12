@@ -25,10 +25,13 @@ def _resolve_project_path(path: str | Path) -> Path:
 
 
 MODEL_PATH = _resolve_project_path(
-    os.environ.get("MODEL_PATH", "ml/model_artifacts/xgb_model.pkl")
+    os.environ.get("MODEL_PATH", "ml/model_artifacts/model.pkl")
 )
 FEATURE_NAMES_PATH = _resolve_project_path(
     os.environ.get("FEATURE_NAMES_PATH", "ml/model_artifacts/feature_names.json")
+)
+SHAP_FEATURE_NAMES_PATH = _resolve_project_path(
+    os.environ.get("SHAP_FEATURE_NAMES_PATH", "ml/model_artifacts/shap_feature_names.json")
 )
 
 FRONTEND_DIR = PROJECT_ROOT / "frontend"

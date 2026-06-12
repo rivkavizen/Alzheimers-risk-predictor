@@ -2,7 +2,7 @@
 $ErrorActionPreference = "Stop"
 Set-Location $PSScriptRoot\..
 
-if (-not (Test-Path "ml\model_artifacts\xgb_model.pkl")) {
+if (-not (Test-Path "ml\model_artifacts\model.pkl")) {
     Write-Host "Model not found. Running training pipeline..."
     python ml/clean_data.py
     python ml/train.py

@@ -25,5 +25,8 @@ jobs:
       - name: Clean data
         run: python ml/clean_data.py
 
+      - name: Train model
+        run: python ml/train.py
+
       - name: Run tests
         run: pytest tests/ -v

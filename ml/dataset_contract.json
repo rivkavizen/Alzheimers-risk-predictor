@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generated_at": "2026-06-12T07:09:39.569411+00:00",
+  "generated_at": "2026-06-12T08:49:37.722532+00:00",
   "dataset": {
     "name": "Alzheimer's Disease Risk Dataset",
     "raw_source": "alzheimers_disease_data.csv",
@@ -22,7 +22,7 @@
       "dropped_out_of_range": 0,
       "rows_out": 2149,
       "rows_dropped": 0,
-      "output_path": "C:\\personal\\AI_course\\FinalProject\\alzheimers_disease_data_cleaned.csv"
+      "output_path": "C:\\Users\\user\\AppData\\Local\\Temp\\pytest-of-user\\pytest-12\\train0\\cleaned.csv"
     }
   },
   "schema": {
@@ -472,8 +472,12 @@
       "Insights Analyst"
     ],
     "required_artifacts": [
-      "ml/model_artifacts/xgb_model.pkl",
-      "ml/model_artifacts/feature_names.json"
+      "ml/model_artifacts/features.csv",
+      "ml/model_artifacts/model.pkl",
+      "ml/model_artifacts/evaluation_report.md",
+      "ml/model_artifacts/model_card.md",
+      "ml/model_artifacts/feature_names.json",
+      "ml/model_artifacts/shap_feature_names.json"
     ],
     "forbidden_columns": [
       "PatientID",

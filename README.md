@@ -38,7 +38,11 @@ pytest tests/ml/ -v
 | `ml/eda_report.html` | Data Analyst → visual EDA report |
 | `ml/insights.md` | Insights Analyst → business summary |
 | `ml/data_pipeline.py` | Orchestrates 3 pre-scientist agents |
-| `ml/model_artifacts/` | Trained model + feature names |
+| `ml/model_artifacts/features.csv` | Engineered feature matrix |
+| `ml/model_artifacts/model.pkl` | Selected production model |
+| `ml/model_artifacts/evaluation_report.md` | CV comparison of model variations |
+| `ml/model_artifacts/model_card.md` | Purpose, metrics, limitations, ethics |
+| `ml/model_artifacts/` | Model + feature metadata |
 
 After changing the raw dataset, re-run `clean_data.py` → `train.py` → `evaluate.py`.
 
@@ -75,7 +79,7 @@ Install CrewAI dependencies: `pip install -r backend/requirements.txt`
 |----------|--------|
 | `SUPABASE_URL` | `https://puhtwpurgkqylnanortj.supabase.co` |
 | `SUPABASE_KEY` | [service_role key](https://supabase.com/dashboard/project/puhtwpurgkqylnanortj/settings/api) |
-| `MODEL_PATH` | `ml/model_artifacts/xgb_model.pkl` |
+| `MODEL_PATH` | `ml/model_artifacts/model.pkl` |
 | `FEATURE_NAMES_PATH` | `ml/model_artifacts/feature_names.json` |
 
 5. Deploy (`railway up` or push to GitHub if connected). Root `requirements.txt` points at `backend/requirements.txt` for Nixpacks.

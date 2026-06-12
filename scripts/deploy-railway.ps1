@@ -4,7 +4,7 @@ Set-Location $PSScriptRoot\..
 
 Write-Host "=== Pre-deploy checks ===" -ForegroundColor Cyan
 
-if (-not (Test-Path "ml\model_artifacts\xgb_model.pkl")) {
+if (-not (Test-Path "ml\model_artifacts\model.pkl")) {
     throw "Model missing. Run: python ml/clean_data.py && python ml/train.py"
 }
 
@@ -28,7 +28,7 @@ if ($status -match "No linked project") {
 Write-Host ""
 Write-Host "=== Setting Railway variables ===" -ForegroundColor Cyan
 railway variables set "SUPABASE_URL=https://puhtwpurgkqylnanortj.supabase.co"
-railway variables set "MODEL_PATH=ml/model_artifacts/xgb_model.pkl"
+railway variables set "MODEL_PATH=ml/model_artifacts/model.pkl"
 railway variables set "FEATURE_NAMES_PATH=ml/model_artifacts/feature_names.json"
 railway variables set "ANTHROPIC_MODEL=claude-sonnet-4-6"
 

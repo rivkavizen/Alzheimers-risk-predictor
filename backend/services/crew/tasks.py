@@ -101,11 +101,14 @@ def train_model_task(agent):
 
     return Task(
         description=(
-            "Read dataset_contract.json before training. Train XGBoost via ml/train.py "
-            "using only model_features from the contract. Validate forbidden columns are "
-            "excluded and document CV AUC."
+            "Read dataset_contract.json and validate cleaned data. Run ml/train.py: "
+            "feature engineering, compare at least 2 model variations, select best model, "
+            "and produce features.csv, model.pkl, evaluation_report.md, and model_card.md."
         ),
-        expected_output="Training metrics JSON with cv_auc and confirmation of contract compliance.",
+        expected_output=(
+            "Training metrics JSON with cv_auc, model comparison summary, and confirmation "
+            "that all required artifacts exist."
+        ),
         agent=agent,
     )
 

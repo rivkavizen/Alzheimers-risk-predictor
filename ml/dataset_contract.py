@@ -169,8 +169,12 @@ def build_contract(
                 "Insights Analyst",
             ],
             "required_artifacts": [
-                "ml/model_artifacts/xgb_model.pkl",
+                "ml/model_artifacts/features.csv",
+                "ml/model_artifacts/model.pkl",
+                "ml/model_artifacts/evaluation_report.md",
+                "ml/model_artifacts/model_card.md",
                 "ml/model_artifacts/feature_names.json",
+                "ml/model_artifacts/shap_feature_names.json",
             ],
             "forbidden_columns": DROP_COLUMNS,
             "validation_reference": "backend/services/validation.py",
